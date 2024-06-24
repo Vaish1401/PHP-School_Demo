@@ -1,3 +1,5 @@
+mkdir uploads
+
 <?php
 include 'config.php';
 
@@ -12,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST["email"]);
     $address = trim($_POST["address"]);
     $class_id = trim($_POST["class_id"]);
-    
+
     // Validate name
     if (empty($name)) {
         $name_err = "Name is required";
@@ -27,8 +29,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (!array_key_exists($file_ext, $allowed_types) || !in_array($file_type, $allowed_types)) {
             $image_err = "Please upload a valid image file (jpg, jpeg, png)";
         } else {
-            $image = time() . "_" . basename($_FILES["image"]["name"]);
-            $target_path = "images/" . $image;
+            $image = uniqid() . "_" . basename($_FILES["image"]["name"]);
+            $target_path = "uploads/" . $image;
             move_uploaded_file($_FILES["image"]["tmp_name"], $target_path);
         }
     }
@@ -36,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Insert data if no errors
     if (empty($name_err) && empty($image_err)) {
         $stmt = $conn->prepare("INSERT INTO student (name, email, address, class_id, image) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssds", $name, $email, $address, $class_id, $image);
+        $stmt->bind_param("sssiss", $name, $email, $address, $class_id, $image);
 
         if ($stmt->execute()) {
             header("Location: index.php");
@@ -44,6 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             echo "Error: " . $stmt->error;
         }
+
         $stmt->close();
     }
 }
