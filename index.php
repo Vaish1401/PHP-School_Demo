@@ -1,77 +1,58 @@
-<?php
-include 'config.php';
-
-// Fetch all students with their class names
-$sql = "SELECT student.id, student.name, student.email, student.created_at, student.image, classes.name AS class_name 
-        FROM student 
-        LEFT JOIN classes ON student.class_id = classes.class_id";
-$result = $conn->query($sql);
-
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>School Demo - Home</title>
+    <title>Student List</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        table, th, td {
-            border: 1px solid black;
-        }
-        th, td {
-            padding: 15px;
-            text-align: left;
-        }
-        img {
-            width: 50px;
-            height: auto;
-        }
+        /* Custom styles can be added here */
     </style>
 </head>
 <body>
-    <h1>List of Students</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Created At</th>
-                <th>Class</th>
-                <th>Image</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    echo "<tr>
-                        <td>{$row['name']}</td>
-                        <td>{$row['email']}</td>
-                        <td>{$row['created_at']}</td>
-                        <td>{$row['class_name']}</td>
-                        <td><img src='images/{$row['image']}' alt='Student Image'></td>
+    <div class="container">
+        <h1 class="my-4">Student List</h1>
+        
+        <!-- Table with Bootstrap classes -->
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Creation Date</th>
+                    <th>Class Name</th>
+                    <th>Image</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- PHP loop to fetch and display student data -->
+                <?php while ($row = $result->fetch_assoc()) { ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($row['name']); ?></td>
+                        <td><?php echo htmlspecialchars($row['email']); ?></td>
+                        <td><?php echo htmlspecialchars($row['created_at']); ?></td>
+                        <td><?php echo htmlspecialchars($row['class_name']); ?></td>
                         <td>
-                            <a href='view.php?id={$row['id']}'>View</a> | 
-                            <a href='edit.php?id={$row['id']}'>Edit</a> | 
-                            <a href='delete.php?id={$row['id']}'>Delete</a>
+                            <img src="images/<?php echo htmlspecialchars($row['image']); ?>" alt="Student Image" class="img-thumbnail" style="max-width: 100px;">
                         </td>
-                    </tr>";
-                }
-            } else {
-                echo "<tr><td colspan='6'>No students found</td></tr>";
-            }
-            ?>
-        </tbody>
-    </table>
+                        <td>
+                            <a href="view.php?id=<?php echo $row['id']; ?>" class="btn btn-primary btn-sm">View</a>
+                            <a href="edit.php?id=<?php echo $row['id']; ?>" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="delete.php?id=<?php echo $row['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this student?')">Delete</a>
+                        </td>
+                    </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+
+        <!-- Link to create new student -->
+        <a href="create.php" class="btn btn-success">Add New Student</a>
+    </div>
+
+    <!-- Bootstrap JS (optional for some components) -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 
-<?php
-$conn->close();
-?>
