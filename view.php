@@ -1,29 +1,37 @@
 <?php
 include 'config.php';
 
+// Check if ID parameter is provided
 if (isset($_GET['id'])) {
     $student_id = $_GET['id'];
 
-    // Fetch student details with class name
-    $sql = "SELECT student.id, student.name, student.email, student.address, student.created_at, student.image, classes.name AS class_name 
-            FROM student 
-            LEFT JOIN classes ON student.class_id = classes.class_id 
-            WHERE student.id = ?";
+    // Prepare SQL query to fetch student details including class name
+    $sql = "SELECT s.id, s.name, s.email, s.address, s.created_at, s.image, c.name as class_name
+            FROM student s
+            LEFT JOIN classes c ON s.class_id = c.class_id
+            WHERE s.id = ?";
+    
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $student_id);
     $stmt->execute();
     $result = $stmt->get_result();
-    
-    if ($result->num_rows > 0) {
-        $student = $result->fetch_assoc();
+
+    if ($result->num_rows == 1) {
+        $row = $result->fetch_assoc();
+        $student_name = $row['name'];
+        $student_email = $row['email'];
+        $student_address = $row['address'];
+        $student_class = $row['class_name'];
+        $student_image = $row['image'];
+        $created_at = $row['created_at'];
     } else {
-        echo "No student found with ID: " . $student_id;
+        echo "Student not found.";
         exit();
     }
 
     $stmt->close();
 } else {
-    echo "No student ID provided.";
+    echo "Invalid request.";
     exit();
 }
 
@@ -36,35 +44,36 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Student</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .student-details {
-            width: 50%;
-            margin: 0 auto;
-            border: 1px solid #ddd;
-            padding: 20px;
-            border-radius: 5px;
+        .student-info {
+            margin-top: 20px;
         }
-        .student-details img {
-            max-width: 100%;
-            height: auto;
-        }
-        .student-details h2 {
-            text-align: center;
-        }
-        .student-details p {
-            font-size: 1.2em;
+        .student-image {
+            max-width: 300px;
         }
     </style>
 </head>
 <body>
-    <div class="student-details">
-        <h2><?php echo htmlspecialchars($student['name']); ?></h2>
-        <p><strong>Email:</strong> <?php echo htmlspecialchars($student['email']); ?></p>
-        <p><strong>Address:</strong> <?php echo nl2br(htmlspecialchars($student['address'])); ?></p>
-        <p><strong>Class:</strong> <?php echo htmlspecialchars($student['class_name']); ?></p>
-        <p><strong>Created At:</strong> <?php echo htmlspecialchars($student['created_at']); ?></p>
-        <p><strong>Image:</strong></p>
-        <img src="images/<?php echo htmlspecialchars($student['image']); ?>" alt="Student Image">
+    <div class="container">
+        <h1 class="my-4">View Student Details</h1>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><?php echo htmlspecialchars($student_name); ?></h5>
+                <p class="card-text"><strong>Email:</strong> <?php echo htmlspecialchars($student_email); ?></p>
+                <p class="card-text"><strong>Address:</strong> <?php echo htmlspecialchars($student_address); ?></p>
+                <p class="card-text"><strong>Class:</strong> <?php echo htmlspecialchars($student_class); ?></p>
+                <p class="card-text"><strong>Creation Date:</strong> <?php echo htmlspecialchars($created_at); ?></p>
+            </div>
+            <img src="uploads/<?php echo htmlspecialchars($student_image); ?>" class="card-img-bottom student-image" alt="Student Image">
+        </div>
+
+        <a href="index.php" class="btn btn-primary mt-3">Back to Student List</a>
     </div>
+
+    <!-- Bootstrap JS (optional for some components) -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
